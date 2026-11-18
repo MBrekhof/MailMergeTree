@@ -47,6 +47,35 @@ Code: `MailMergeTree.Win/Controllers/MailMergeFieldTreeController.cs` and `Merge
   That did not reproduce (two tabs at once, first tab closed, saved template reopened); in tabbed MDI each detail
   view gets its own rich-edit ribbon items. Not tested with other UI types (SDI, non-tabbed MDI).
 
+## Blazor version (added 2026-11-18)
+
+Same picker in a Blazor Server project that uses the database directly (integrated security, no Middle Tier). Code:
+`MailMergeTree.Blazor.Server/Controllers/MailMergeFieldTreeController.cs` and `Editors/` (about 150 lines).
+
+Checked in a browser (Playwright, light and dark theme): tree opens from Mail Merge > Insert Merge Field; a reference
+node cannot be inserted; `Debtor.Address.City` and `Number` land at the caret; both survive Save; **Show in document**
+on `INV-001` gives "City: Amsterdam Nr: INV-001".
+
+What differs from WinForms:
+
+- **Extension point:** `DxRichEditModel.CustomizeRibbon` (chained to XAF's own handler), then `IBarButton.Click` of
+  `RichEditBarItemNames.ShowInsertMergeFieldDialog`. One hook; there is no split button.
+- **No reusable Object Model tree:** `ModelBrowserAdapter` is Win-only. `MergeFieldNode` repeats its rules on
+  `ITypeInfo`.
+- **Caret:** `DxRichEdit` only tracks the selection on the server while `SelectionChanged` has a handler.
+- **Popup hosting:** `RichTextPropertyEditor.Extensions`. Changing a model in that list re-renders the editor and
+  resets its modified flag in the browser, which silently drops an insert made just before Save. The popup therefore
+  holds its own state. Found by logging `ModifiedChanged` / `DocumentContentChanged`.
+
+Finding, not fixed (DevExpress behaviour): **View Merged Data in the Blazor template editor shows nested fields
+empty**, while top-level fields show values. The Blazor editor merges that preview in the browser and
+`DevExpress.Blazor.RichEdit` (`Utils/DataConverter.cs`) sends only the data source's top-level columns. The server-side
+merge behind **Show in document** resolves nested paths. A fix would mean supplying the preview with flattened rows
+(dictionary rows keyed by the dotted paths used in the document); not tried.
+
+Not covered: toolbar bar mode, replacing a selected range, double-click insert, image members, member-level
+permissions.
+
 ## Run it
 
 See the README. To build the picker into another app: [how-to-implement.md](how-to-implement.md).

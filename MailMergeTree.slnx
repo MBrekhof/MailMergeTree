@@ -4,6 +4,7 @@
     <BuildType Name="EasyTest" />
     <BuildType Name="Release" />
   </Configurations>
+  <Project Path="MailMergeTree/MailMergeTree.Blazor.Server/MailMergeTree.Blazor.Server.csproj" />
   <Project Path="MailMergeTree/MailMergeTree.MiddleTier/MailMergeTree.MiddleTier.csproj" />
   <Project Path="MailMergeTree/MailMergeTree.Module/MailMergeTree.Module.csproj" />
   <Project Path="MailMergeTree/MailMergeTree.Win/MailMergeTree.Win.csproj" />

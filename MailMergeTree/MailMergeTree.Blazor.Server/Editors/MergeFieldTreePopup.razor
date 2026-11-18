@@ -1,0 +1,51 @@
+@using DevExpress.ExpressApp.DC
+@using DevExpress.ExpressApp.Utils
+
+<DxPopup Visible="@visible" VisibleChanged="@(v => visible = v)" HeaderText="@header" Width="420px" MaxHeight="80vh"
+         Scrollable="true" ShowFooter="true" CssClass="merge-field-popup">
+    <BodyContentTemplate>
+        <DxTreeView @key="treeKey" Data="@nodes" LoadChildNodesOnDemand="true" AllowSelectNodes="true"
+                    SelectionChanged="@OnSelectionChanged" CssClass="merge-field-tree">
+            <DataMappings>
+                <DxTreeViewDataMapping Text="@nameof(MergeFieldNode.Caption)"
+                                       Children="@nameof(MergeFieldNode.Children)"
+                                       HasChildren="@nameof(MergeFieldNode.HasChildren)" />
+            </DataMappings>
+        </DxTreeView>
+    </BodyContentTemplate>
+    <FooterContentTemplate>
+        <DxButton Text="Insert" RenderStyle="ButtonRenderStyle.Primary" Enabled="@(selected?.IsField == true)"
+                  Click="@Insert" CssClass="merge-field-insert" />
+        <DxButton Text="Cancel" RenderStyle="ButtonRenderStyle.Secondary" Click="@(() => visible = false)" />
+    </FooterContentTemplate>
+</DxPopup>
+
+@code {
+    // Receives the dotted member path of the chosen field.
+    [Parameter] public EventCallback<string> FieldSelected { get; set; }
+
+    private List<MergeFieldNode> nodes = new();
+    private MergeFieldNode selected;
+    private string header;
+    private bool visible;
+    private int treeKey;
+
+    // Opens the picker for the mail merge template's Data Type. Visibility lives in this component on purpose:
+    // driving it through the component model would re-render the rich text editor that hosts the popup, and that
+    // render sends the editor a stale Modified flag, after which Save no longer stores the inserted field.
+    public Task ShowAsync(ITypeInfo rootType) => InvokeAsync(() => {
+        nodes = MergeFieldNode.For(rootType);
+        header = "Insert Merge Field - " + CaptionHelper.GetClassCaption(rootType.FullName);
+        selected = null;
+        treeKey++; // every opening starts collapsed and without a selection
+        visible = true;
+        StateHasChanged();
+    });
+
+    private Task Insert() {
+        visible = false;
+        return FieldSelected.InvokeAsync(selected.Path);
+    }
+
+    private void OnSelectionChanged(TreeViewNodeEventArgs e) => selected = e.NodeInfo?.DataItem as MergeFieldNode;
+}
