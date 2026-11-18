@@ -1,0 +1,61 @@
+<Project>
+    <Sdk Name="Microsoft.NET.Sdk" />
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationIcon>ExpressApp.ico</ApplicationIcon>
+    <Deterministic>false</Deterministic>
+    <AssemblyVersion>1.0.*</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Configurations>Debug;Release;EasyTest</Configurations>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <Using Include="DevExpress.ExpressApp.ListView" Alias="ListView" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Model.xafml" />
+    <None Remove="Images\Logo.svg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Model.xafml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Images\Logo.svg" />
+    <EmbeddedResource Include="Images\ExpressAppLogo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="DevExpress.ExpressApp" Version="26.1.*" />
+    <PackageReference Include="DevExpress.ExpressApp.CodeAnalysis" Version="26.1.*" />
+    <PackageReference Include="DevExpress.ExpressApp.EFCore" Version="26.1.*" />
+    <PackageReference Include="DevExpress.ExpressApp.FileAttachment.Win" Version="26.1.*" />
+    <PackageReference Include="DevExpress.ExpressApp.Notifications.Win" Version="26.1.*" />
+    <PackageReference Include="DevExpress.ExpressApp.Office.Win" Version="26.1.*" />
+    <PackageReference Include="DevExpress.ExpressApp.ReportsV2.Win" Version="26.1.*" />
+    <PackageReference Include="DevExpress.ExpressApp.Security.EFCore.Extensions.Win" Version="26.1.*" />
+    <PackageReference Include="DevExpress.ExpressApp.TreeListEditors.Win" Version="26.1.*" />
+    <PackageReference Include="DevExpress.ExpressApp.Validation.Win" Version="26.1.*" />
+    <PackageReference Include="DevExpress.ExpressApp.Win" Version="26.1.*" />
+    <PackageReference Include="DevExpress.ExpressApp.Win.Design" Version="26.1.*" />
+    <PackageReference Include="DevExpress.Persistent.Base" Version="26.1.*" />
+    <PackageReference Include="DevExpress.Persistent.BaseImpl.EFCore" Version="26.1.*" />
+    <PackageReference Include="DevExpress.RichEdit.Export" Version="26.1.*" />
+    <PackageReference Include="DevExpress.Win.Design" Version="26.1.*" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="5.0.0">
+      <ExcludeAssets>contentFiles</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="9.0.21" Condition="!$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net10.0'))" NoWarn="NU1510" />
+    
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MailMergeTree.Module\MailMergeTree.Module.csproj" />
+  </ItemGroup>
+  <Target Name="BuildMiddleTier" BeforeTargets="Build" Condition="'$(DesignTimeBuild)' != 'true'">
+    <MSBuild Projects="..\MailMergeTree.MiddleTier\MailMergeTree.MiddleTier.csproj"
+      Targets="Build" BuildInParallel="false" Properties="Configuration=$(Configuration);Platform=$(Platform)" />
+  </Target>
+</Project>
